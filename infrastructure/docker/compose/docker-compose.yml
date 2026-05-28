@@ -5,7 +5,7 @@ services:
     build:
       context: ../../../../edgecloud-discovery-service
     ports:
-      - "8761:8761"
+      - "${DISCOVERY_PORT}:8761"
     networks:
       - edgecloud-network
 
@@ -14,12 +14,12 @@ services:
     build:
       context: ../../../../edgecloud-api-gateway
     ports:
-      - "8080:8080"
+      - "${GATEWAY_PORT}:8080"
     depends_on:
       - discovery-service
     environment:
-      EUREKA_SERVER_URL: http://discovery-service:8761/eureka/
-      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka/
+      EUREKA_SERVER_URL: ${EUREKA_SERVER_URL}
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: ${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}
     networks:
       - edgecloud-network
 
@@ -28,12 +28,12 @@ services:
     container_name: edgecloud-auth-mysql
     restart: unless-stopped
     environment:
-      MYSQL_DATABASE: auth_db
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_USER: auth_user
-      MYSQL_PASSWORD: auth_pass
+      MYSQL_DATABASE: ${AUTH_DB_NAME}
+      MYSQL_ROOT_PASSWORD: ${AUTH_DB_ROOT_PASSWORD}
+      MYSQL_USER: ${AUTH_DB_USER}
+      MYSQL_PASSWORD: ${AUTH_DB_PASSWORD}
     ports:
-      - "3307:3306"
+      - "${AUTH_DB_PORT}:3306"
     volumes:
       - auth_mysql_data:/var/lib/mysql
     networks:
@@ -44,12 +44,12 @@ services:
     container_name: edgecloud-monitoring-mysql
     restart: unless-stopped
     environment:
-      MYSQL_DATABASE: monitoring_db
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_USER: monitoring_user
-      MYSQL_PASSWORD: monitoring_pass
+      MYSQL_DATABASE: ${MONITORING_DB_NAME}
+      MYSQL_ROOT_PASSWORD: ${MONITORING_DB_ROOT_PASSWORD}
+      MYSQL_USER: ${MONITORING_DB_USER}
+      MYSQL_PASSWORD: ${MONITORING_DB_PASSWORD}
     ports:
-      - "3308:3306"
+      - "${MONITORING_DB_PORT}:3306"
     volumes:
       - monitoring_mysql_data:/var/lib/mysql
     networks:
@@ -60,12 +60,12 @@ services:
     container_name: edgecloud-device-mysql
     restart: unless-stopped
     environment:
-      MYSQL_DATABASE: device_db
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_USER: device_user
-      MYSQL_PASSWORD: device_pass
+      MYSQL_DATABASE: ${DEVICE_DB_NAME}
+      MYSQL_ROOT_PASSWORD: ${DEVICE_DB_ROOT_PASSWORD}
+      MYSQL_USER: ${DEVICE_DB_USER}
+      MYSQL_PASSWORD: ${DEVICE_DB_PASSWORD}
     ports:
-      - "3309:3306"
+      - "${DEVICE_DB_PORT}:3306"
     volumes:
       - device_mysql_data:/var/lib/mysql
     networks:
@@ -76,12 +76,12 @@ services:
     container_name: edgecloud-alert-mysql
     restart: unless-stopped
     environment:
-      MYSQL_DATABASE: alert_db
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_USER: alert_user
-      MYSQL_PASSWORD: alert_pass
+      MYSQL_DATABASE: ${ALERT_DB_NAME}
+      MYSQL_ROOT_PASSWORD: ${ALERT_DB_ROOT_PASSWORD}
+      MYSQL_USER: ${ALERT_DB_USER}
+      MYSQL_PASSWORD: ${ALERT_DB_PASSWORD}
     ports:
-      - "3310:3306"
+      - "${ALERT_DB_PORT}:3306"
     volumes:
       - alert_mysql_data:/var/lib/mysql
     networks:
