@@ -1,0 +1,27 @@
+services:
+
+  discovery-service:
+    container_name: edgecloud-discovery-service
+    build:
+      context: ../../../../edgecloud-discovery-service
+    ports:
+      - "8761:8761"
+    networks:
+      - edgecloud-network
+
+  api-gateway:
+    container_name: edgecloud-api-gateway
+    build:
+      context: ../../../../edgecloud-api-gateway
+    ports:
+      - "8080:8080"
+    depends_on:
+      - discovery-service
+    environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka
+    networks:
+      - edgecloud-network
+
+networks:
+  edgecloud-network:
+    driver: bridge
