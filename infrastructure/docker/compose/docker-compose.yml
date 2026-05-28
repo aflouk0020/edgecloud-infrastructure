@@ -18,10 +18,80 @@ services:
     depends_on:
       - discovery-service
     environment:
-      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka
+      EUREKA_SERVER_URL: http://discovery-service:8761/eureka/
+    networks:
+      - edgecloud-network
+
+  auth-mysql:
+    image: mysql:8.0
+    container_name: edgecloud-auth-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: auth_db
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USER: auth_user
+      MYSQL_PASSWORD: auth_pass
+    ports:
+      - "3307:3306"
+    volumes:
+      - auth_mysql_data:/var/lib/mysql
+    networks:
+      - edgecloud-network
+
+  monitoring-mysql:
+    image: mysql:8.0
+    container_name: edgecloud-monitoring-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: monitoring_db
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USER: monitoring_user
+      MYSQL_PASSWORD: monitoring_pass
+    ports:
+      - "3308:3306"
+    volumes:
+      - monitoring_mysql_data:/var/lib/mysql
+    networks:
+      - edgecloud-network
+
+  device-mysql:
+    image: mysql:8.0
+    container_name: edgecloud-device-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: device_db
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USER: device_user
+      MYSQL_PASSWORD: device_pass
+    ports:
+      - "3309:3306"
+    volumes:
+      - device_mysql_data:/var/lib/mysql
+    networks:
+      - edgecloud-network
+
+  alert-mysql:
+    image: mysql:8.0
+    container_name: edgecloud-alert-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: alert_db
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USER: alert_user
+      MYSQL_PASSWORD: alert_pass
+    ports:
+      - "3310:3306"
+    volumes:
+      - alert_mysql_data:/var/lib/mysql
     networks:
       - edgecloud-network
 
 networks:
   edgecloud-network:
     driver: bridge
+
+volumes:
+  auth_mysql_data:
+  monitoring_mysql_data:
+  device_mysql_data:
+  alert_mysql_data:
