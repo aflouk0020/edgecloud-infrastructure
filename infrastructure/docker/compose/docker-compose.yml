@@ -19,6 +19,7 @@ services:
       - discovery-service
     environment:
       EUREKA_SERVER_URL: http://discovery-service:8761/eureka/
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka/
     networks:
       - edgecloud-network
 
