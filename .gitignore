@@ -1,0 +1,20 @@
+# Environment files
+.env
+*.env
+
+# Logs
+logs/
+*.log
+
+# macOS
+.DS_Store
+
+# Build outputs
+target/
+dist/
+build/
+
+# IDE
+.idea/
+.vscode/
+*.iml
