@@ -17,9 +17,85 @@ services:
       - "${GATEWAY_PORT}:8080"
     depends_on:
       - discovery-service
+      - auth-service
+      - monitoring-service
+      - device-service
+      - alert-service
     environment:
       EUREKA_SERVER_URL: ${EUREKA_SERVER_URL}
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: ${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}
+    networks:
+      - edgecloud-network
+
+  auth-service:
+    container_name: edgecloud-auth-service
+    build:
+      context: ../../../../edgecloud-auth-service
+    ports:
+      - "8081:8081"
+    depends_on:
+      - discovery-service
+      - auth-mysql
+    environment:
+      SERVER_PORT: 8081
+      SPRING_DATASOURCE_URL: jdbc:mysql://auth-mysql:3306/auth_db
+      SPRING_DATASOURCE_USERNAME: ${AUTH_DB_USER}
+      SPRING_DATASOURCE_PASSWORD: ${AUTH_DB_PASSWORD}
+      EUREKA_SERVER_URL: ${EUREKA_SERVER_URL}
+    networks:
+      - edgecloud-network
+
+  monitoring-service:
+    container_name: edgecloud-monitoring-service
+    build:
+      context: ../../../../edgecloud-monitoring-service
+    ports:
+      - "8082:8082"
+    depends_on:
+      - discovery-service
+      - monitoring-mysql
+    environment:
+      SERVER_PORT: 8082
+      SPRING_DATASOURCE_URL: jdbc:mysql://monitoring-mysql:3306/monitoring_db
+      SPRING_DATASOURCE_USERNAME: ${MONITORING_DB_USER}
+      SPRING_DATASOURCE_PASSWORD: ${MONITORING_DB_PASSWORD}
+      EUREKA_SERVER_URL: ${EUREKA_SERVER_URL}
+    networks:
+      - edgecloud-network
+
+  device-service:
+    container_name: edgecloud-device-service
+    build:
+      context: ../../../../edgecloud-device-service
+    ports:
+      - "8083:8083"
+    depends_on:
+      - discovery-service
+      - device-mysql
+    environment:
+      SERVER_PORT: 8083
+      SPRING_DATASOURCE_URL: jdbc:mysql://device-mysql:3306/device_db
+      SPRING_DATASOURCE_USERNAME: ${DEVICE_DB_USER}
+      SPRING_DATASOURCE_PASSWORD: ${DEVICE_DB_PASSWORD}
+      EUREKA_SERVER_URL: ${EUREKA_SERVER_URL}
+    networks:
+      - edgecloud-network
+
+  alert-service:
+    container_name: edgecloud-alert-service
+    build:
+      context: ../../../../edgecloud-alert-service
+    ports:
+      - "8084:8084"
+    depends_on:
+      - discovery-service
+      - alert-mysql
+    environment:
+      SERVER_PORT: 8084
+      SPRING_DATASOURCE_URL: jdbc:mysql://alert-mysql:3306/alert_db
+      SPRING_DATASOURCE_USERNAME: ${ALERT_DB_USER}
+      SPRING_DATASOURCE_PASSWORD: ${ALERT_DB_PASSWORD}
+      EUREKA_SERVER_URL: ${EUREKA_SERVER_URL}
     networks:
       - edgecloud-network
 
