@@ -8,6 +8,12 @@ services:
       - "${DISCOVERY_PORT}:8761"
     networks:
       - edgecloud-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget --spider -q http://localhost:8761/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
 
   api-gateway:
     container_name: edgecloud-api-gateway
@@ -26,6 +32,12 @@ services:
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: ${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}
     networks:
       - edgecloud-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget --spider -q http://localhost:8080/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
 
   auth-service:
     container_name: edgecloud-auth-service
@@ -44,6 +56,12 @@ services:
       EUREKA_SERVER_URL: ${EUREKA_SERVER_URL}
     networks:
       - edgecloud-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget --spider -q http://localhost:8081/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
 
   monitoring-service:
     container_name: edgecloud-monitoring-service
@@ -62,6 +80,12 @@ services:
       EUREKA_SERVER_URL: ${EUREKA_SERVER_URL}
     networks:
       - edgecloud-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget --spider -q http://localhost:8082/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
 
   device-service:
     container_name: edgecloud-device-service
@@ -80,6 +104,12 @@ services:
       EUREKA_SERVER_URL: ${EUREKA_SERVER_URL}
     networks:
       - edgecloud-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget --spider -q http://localhost:8083/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
 
   alert-service:
     container_name: edgecloud-alert-service
@@ -98,6 +128,12 @@ services:
       EUREKA_SERVER_URL: ${EUREKA_SERVER_URL}
     networks:
       - edgecloud-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget --spider -q http://localhost:8084/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
 
   auth-mysql:
     image: mysql:8.0
@@ -114,6 +150,12 @@ services:
       - auth_mysql_data:/var/lib/mysql
     networks:
       - edgecloud-network
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u${AUTH_DB_USER} -p${AUTH_DB_PASSWORD} || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
 
   monitoring-mysql:
     image: mysql:8.0
@@ -130,6 +172,12 @@ services:
       - monitoring_mysql_data:/var/lib/mysql
     networks:
       - edgecloud-network
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u${MONITORING_DB_USER} -p${MONITORING_DB_PASSWORD} || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
 
   device-mysql:
     image: mysql:8.0
@@ -146,6 +194,12 @@ services:
       - device_mysql_data:/var/lib/mysql
     networks:
       - edgecloud-network
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u${DEVICE_DB_USER} -p${DEVICE_DB_PASSWORD} || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
 
   alert-mysql:
     image: mysql:8.0
@@ -162,6 +216,12 @@ services:
       - alert_mysql_data:/var/lib/mysql
     networks:
       - edgecloud-network
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u${ALERT_DB_USER} -p${ALERT_DB_PASSWORD} || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
 
 networks:
   edgecloud-network:
