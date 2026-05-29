@@ -314,4 +314,43 @@ A backend service follows the base template when:
 * Service name follows naming convention
 * Error handling structure is planned or implemented
 * Documentation is updated
+---
+# Build Validation Standard
+All EdgeCloud Monitor backend services must be independently buildable.
+## Standard Build Commands
+Using Maven Wrapper:
+```bash
+./mvnw clean package -DskipTests
 
+Using local Maven:
+
+mvn clean package -DskipTests
+
+Validation Requirements
+
+The build process must:
+
+* complete successfully
+* generate a runnable JAR file
+* resolve all dependencies
+* pass configuration validation
+* support Docker image creation
+
+Expected Output
+
+BUILD SUCCESS
+
+Example output artifact:
+
+target/<service-name>-0.0.1-SNAPSHOT.jar
+
+Current Validation Status
+
+The following services have been successfully built:
+
+* edgecloud-auth-service
+* edgecloud-monitoring-service
+* edgecloud-device-service
+* edgecloud-alert-service
+* edgecloud-api-gateway
+* edgecloud-discovery-service
