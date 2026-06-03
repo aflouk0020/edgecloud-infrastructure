@@ -46,8 +46,10 @@ services:
     ports:
       - "8081:8081"
     depends_on:
-      - discovery-service
-      - auth-mysql
+      discovery-service:
+        condition: service_healthy
+      auth-mysql:
+        condition: service_healthy
     environment:
       SERVER_PORT: 8081
       SPRING_DATASOURCE_URL: jdbc:mysql://auth-mysql:3306/auth_db
