@@ -20,7 +20,7 @@ services:
     build:
       context: ../../../../edgecloud-api-gateway
     ports:
-      - "${GATEWAY_PORT}:8080"
+      - "${GATEWAY_PORT}:8095"
     depends_on:
       - discovery-service
       - auth-service
@@ -33,7 +33,7 @@ services:
     networks:
       - edgecloud-network
     healthcheck:
-      test: ["CMD-SHELL", "wget --spider -q http://localhost:8080/actuator/health || exit 1"]
+      test: ["CMD-SHELL", "wget --spider -q http://localhost:8095/actuator/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 5
