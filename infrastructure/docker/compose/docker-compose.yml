@@ -2,6 +2,7 @@ services:
 
   discovery-service:
     container_name: edgecloud-discovery-service
+    restart: unless-stopped
     build:
       context: ../../../../edgecloud-discovery-service
     ports:
@@ -9,7 +10,9 @@ services:
     networks:
       - edgecloud-network
     healthcheck:
-      test: ["CMD-SHELL", "wget --spider -q http://localhost:8761/actuator/health || exit 1"]
+      test:
+        - CMD-SHELL
+        - wget --spider -q http://localhost:8761/actuator/health || exit 1
       interval: 30s
       timeout: 10s
       retries: 5
@@ -17,23 +20,23 @@ services:
 
   api-gateway:
     container_name: edgecloud-api-gateway
+    restart: unless-stopped
     build:
       context: ../../../../edgecloud-api-gateway
     ports:
       - "${GATEWAY_PORT}:8095"
     depends_on:
-      - discovery-service
-      - auth-service
-      - monitoring-service
-      - device-service
-      - alert-service
+      discovery-service:
+        condition: service_healthy
     environment:
       EUREKA_SERVER_URL: ${EUREKA_SERVER_URL}
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: ${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}
     networks:
       - edgecloud-network
     healthcheck:
-      test: ["CMD-SHELL", "wget --spider -q http://localhost:8095/actuator/health || exit 1"]
+      test:
+        - CMD-SHELL
+        - wget --spider -q http://localhost:8095/actuator/health || exit 1
       interval: 30s
       timeout: 10s
       retries: 5
@@ -41,6 +44,7 @@ services:
 
   auth-service:
     container_name: edgecloud-auth-service
+    restart: unless-stopped
     build:
       context: ../../../../edgecloud-auth-service
     ports:
@@ -59,7 +63,9 @@ services:
     networks:
       - edgecloud-network
     healthcheck:
-      test: ["CMD-SHELL", "wget --spider -q http://localhost:8081/actuator/health || exit 1"]
+      test:
+        - CMD-SHELL
+        - wget --spider -q http://localhost:8081/actuator/health || exit 1
       interval: 30s
       timeout: 10s
       retries: 5
@@ -67,13 +73,16 @@ services:
 
   monitoring-service:
     container_name: edgecloud-monitoring-service
+    restart: unless-stopped
     build:
       context: ../../../../edgecloud-monitoring-service
     ports:
       - "8082:8082"
     depends_on:
-      - discovery-service
-      - monitoring-mysql
+      discovery-service:
+        condition: service_healthy
+      monitoring-mysql:
+        condition: service_healthy
     environment:
       SERVER_PORT: 8082
       SPRING_DATASOURCE_URL: jdbc:mysql://monitoring-mysql:3306/monitoring_db
@@ -83,7 +92,9 @@ services:
     networks:
       - edgecloud-network
     healthcheck:
-      test: ["CMD-SHELL", "wget --spider -q http://localhost:8082/actuator/health || exit 1"]
+      test:
+        - CMD-SHELL
+        - wget --spider -q http://localhost:8082/actuator/health || exit 1
       interval: 30s
       timeout: 10s
       retries: 5
@@ -91,13 +102,16 @@ services:
 
   device-service:
     container_name: edgecloud-device-service
+    restart: unless-stopped
     build:
       context: ../../../../edgecloud-device-service
     ports:
       - "8083:8083"
     depends_on:
-      - discovery-service
-      - device-mysql
+      discovery-service:
+        condition: service_healthy
+      device-mysql:
+        condition: service_healthy
     environment:
       SERVER_PORT: 8083
       SPRING_DATASOURCE_URL: jdbc:mysql://device-mysql:3306/device_db
@@ -107,7 +121,9 @@ services:
     networks:
       - edgecloud-network
     healthcheck:
-      test: ["CMD-SHELL", "wget --spider -q http://localhost:8083/actuator/health || exit 1"]
+      test:
+        - CMD-SHELL
+        - wget --spider -q http://localhost:8083/actuator/health || exit 1
       interval: 30s
       timeout: 10s
       retries: 5
@@ -115,13 +131,16 @@ services:
 
   alert-service:
     container_name: edgecloud-alert-service
+    restart: unless-stopped
     build:
       context: ../../../../edgecloud-alert-service
     ports:
       - "8084:8084"
     depends_on:
-      - discovery-service
-      - alert-mysql
+      discovery-service:
+        condition: service_healthy
+      alert-mysql:
+        condition: service_healthy
     environment:
       SERVER_PORT: 8084
       SPRING_DATASOURCE_URL: jdbc:mysql://alert-mysql:3306/alert_db
@@ -131,7 +150,9 @@ services:
     networks:
       - edgecloud-network
     healthcheck:
-      test: ["CMD-SHELL", "wget --spider -q http://localhost:8084/actuator/health || exit 1"]
+      test:
+        - CMD-SHELL
+        - wget --spider -q http://localhost:8084/actuator/health || exit 1
       interval: 30s
       timeout: 10s
       retries: 5
@@ -153,7 +174,9 @@ services:
     networks:
       - edgecloud-network
     healthcheck:
-      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u${AUTH_DB_USER} -p${AUTH_DB_PASSWORD} || exit 1"]
+      test:
+        - CMD-SHELL
+        - mysqladmin ping -h localhost -u${AUTH_DB_USER} -p${AUTH_DB_PASSWORD} || exit 1
       interval: 30s
       timeout: 10s
       retries: 5
@@ -175,7 +198,9 @@ services:
     networks:
       - edgecloud-network
     healthcheck:
-      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u${MONITORING_DB_USER} -p${MONITORING_DB_PASSWORD} || exit 1"]
+      test:
+        - CMD-SHELL
+        - mysqladmin ping -h localhost -u${MONITORING_DB_USER} -p${MONITORING_DB_PASSWORD} || exit 1
       interval: 30s
       timeout: 10s
       retries: 5
@@ -197,7 +222,9 @@ services:
     networks:
       - edgecloud-network
     healthcheck:
-      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u${DEVICE_DB_USER} -p${DEVICE_DB_PASSWORD} || exit 1"]
+      test:
+        - CMD-SHELL
+        - mysqladmin ping -h localhost -u${DEVICE_DB_USER} -p${DEVICE_DB_PASSWORD} || exit 1
       interval: 30s
       timeout: 10s
       retries: 5
@@ -219,7 +246,9 @@ services:
     networks:
       - edgecloud-network
     healthcheck:
-      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u${ALERT_DB_USER} -p${ALERT_DB_PASSWORD} || exit 1"]
+      test:
+        - CMD-SHELL
+        - mysqladmin ping -h localhost -u${ALERT_DB_USER} -p${ALERT_DB_PASSWORD} || exit 1
       interval: 30s
       timeout: 10s
       retries: 5
