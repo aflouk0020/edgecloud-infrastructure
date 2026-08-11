@@ -60,6 +60,7 @@ services:
       SPRING_DATASOURCE_USERNAME: ${AUTH_DB_USER}
       SPRING_DATASOURCE_PASSWORD: ${AUTH_DB_PASSWORD}
       EUREKA_SERVER_URL: ${EUREKA_SERVER_URL}
+      EDGECLOUD_INTERNAL_SERVICE_KEY: ${EDGECLOUD_INTERNAL_SERVICE_KEY}
     networks:
       - edgecloud-network
     healthcheck:
@@ -147,6 +148,9 @@ services:
       SPRING_DATASOURCE_USERNAME: ${ALERT_DB_USER}
       SPRING_DATASOURCE_PASSWORD: ${ALERT_DB_PASSWORD}
       EUREKA_SERVER_URL: ${EUREKA_SERVER_URL}
+      EDGECLOUD_INTERNAL_SERVICE_KEY: ${EDGECLOUD_INTERNAL_SERVICE_KEY}
+      EDGE_CLOUD_PROJECT_URL: http://project-service:8086
+      EDGE_CLOUD_NOTIFICATION_URL: http://notification-service:8087
     networks:
       - edgecloud-network
     healthcheck:
@@ -157,6 +161,96 @@ services:
       timeout: 10s
       retries: 5
       start_period: 60s
+
+  project-service:
+    container_name: edgecloud-project-service
+    restart: unless-stopped
+    build:
+      context: ../../../../edgecloud-project-service
+    ports:
+      - "8086:8086"
+    depends_on:
+      discovery-service:
+        condition: service_healthy
+      project-mysql:
+        condition: service_healthy
+    environment:
+      SERVER_PORT: 8086
+      SPRING_DATASOURCE_URL: jdbc:mysql://project-mysql:3306/project_db
+      SPRING_DATASOURCE_USERNAME: ${PROJECT_DB_USER}
+      SPRING_DATASOURCE_PASSWORD: ${PROJECT_DB_PASSWORD}
+      EUREKA_SERVER_URL: ${EUREKA_SERVER_URL}
+      EDGECLOUD_INTERNAL_SERVICE_KEY: ${EDGECLOUD_INTERNAL_SERVICE_KEY}
+      EDGE_CLOUD_MONITORING_URL: http://monitoring-service:8082
+      EDGE_CLOUD_DEVICE_URL: http://device-service:8083
+    networks:
+      - edgecloud-network
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - wget --spider -q http://localhost:8086/actuator/health || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  notification-service:
+    container_name: edgecloud-notification-service
+    restart: unless-stopped
+    build:
+      context: ../../../../edgecloud-notification-service
+    ports:
+      - "8087:8087"
+    depends_on:
+      discovery-service:
+        condition: service_healthy
+      notification-mysql:
+        condition: service_healthy
+      mailpit:
+        condition: service_healthy
+    environment:
+      SERVER_PORT: 8087
+      SPRING_DATASOURCE_URL: jdbc:mysql://notification-mysql:3306/notificationdb
+      SPRING_DATASOURCE_USERNAME: ${NOTIFICATION_DB_USER}
+      SPRING_DATASOURCE_PASSWORD: ${NOTIFICATION_DB_PASSWORD}
+      EUREKA_SERVER_URL: ${EUREKA_SERVER_URL}
+      EDGECLOUD_INTERNAL_SERVICE_KEY: ${EDGECLOUD_INTERNAL_SERVICE_KEY}
+      EDGE_CLOUD_PROJECT_URL: http://project-service:8086
+      EDGE_CLOUD_AUTH_URL: http://auth-service:8081
+      SPRING_MAIL_HOST: mailpit
+      SPRING_MAIL_PORT: 1025
+      SPRING_MAIL_SMTP_AUTH: "false"
+      SPRING_MAIL_SMTP_STARTTLS_ENABLE: "false"
+      NOTIFICATION_DISPATCHER_ENABLED: "true"
+    networks:
+      - edgecloud-network
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - wget --spider -q http://localhost:8087/actuator/health || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  mailpit:
+    image: axllent/mailpit:v1.20.5
+    container_name: edgecloud-mailpit
+    restart: unless-stopped
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    networks:
+      - edgecloud-network
+    healthcheck:
+      test:
+        - CMD
+        - /mailpit
+        - readyz
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
   auth-mysql:
     image: mysql:8.0
@@ -254,6 +348,54 @@ services:
       retries: 5
       start_period: 40s
 
+  project-mysql:
+    image: mysql:8.0
+    container_name: edgecloud-project-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${PROJECT_DB_NAME}
+      MYSQL_ROOT_PASSWORD: ${PROJECT_DB_ROOT_PASSWORD}
+      MYSQL_USER: ${PROJECT_DB_USER}
+      MYSQL_PASSWORD: ${PROJECT_DB_PASSWORD}
+    ports:
+      - "${PROJECT_DB_PORT}:3306"
+    volumes:
+      - project_mysql_data:/var/lib/mysql
+    networks:
+      - edgecloud-network
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - mysqladmin ping -h localhost -u${PROJECT_DB_USER} -p${PROJECT_DB_PASSWORD} || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+
+  notification-mysql:
+    image: mysql:8.0
+    container_name: edgecloud-notification-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${NOTIFICATION_DB_NAME}
+      MYSQL_ROOT_PASSWORD: ${NOTIFICATION_DB_ROOT_PASSWORD}
+      MYSQL_USER: ${NOTIFICATION_DB_USER}
+      MYSQL_PASSWORD: ${NOTIFICATION_DB_PASSWORD}
+    ports:
+      - "${NOTIFICATION_DB_PORT}:3306"
+    volumes:
+      - notification_mysql_data:/var/lib/mysql
+    networks:
+      - edgecloud-network
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - mysqladmin ping -h localhost -u${NOTIFICATION_DB_USER} -p${NOTIFICATION_DB_PASSWORD} || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+
 networks:
   edgecloud-network:
     driver: bridge
@@ -263,3 +405,5 @@ volumes:
   monitoring_mysql_data:
   device_mysql_data:
   alert_mysql_data:
+  project_mysql_data:
+  notification_mysql_data:
